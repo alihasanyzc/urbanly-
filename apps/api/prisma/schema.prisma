@@ -1,0 +1,87 @@
+// Urbanly veritabanı şeması.
+// Şema değişikliği YALNIZCA migration ile uygulanır (bkz. CLAUDE.md §5.1).
+// PostGIS uzantısı konum tabanlı sorgular için kullanılır (yakındaki mekânlar).
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  reviews       Review[]
+  savedPlaces   SavedPlace[]
+
+  @@map("users")
+}
+
+// Refresh token rotasyonu — her token hash'lenerek saklanır (düz metin değil).
+model RefreshToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Place {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  description String?
+  lat         Float
+  lng         Float
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reviews    Review[]
+  savedBy    SavedPlace[]
+
+  @@index([category])
+  @@map("places")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int // 1..5
+  comment   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId   String
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, placeId])
+  @@index([placeId])
+  @@map("reviews")
+}
+
+model SavedPlace {
+  userId    String
+  placeId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, placeId])
+  @@map("saved_places")
+}

@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Urbanly",
+    "slug": "urbanly",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "urbanly",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.urbanly.app"
+    },
+    "android": {
+      "package": "com.urbanly.app"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Yakınındaki mekânları gösterip mesafeleri hesaplamak için konumunu kullanırız."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:4000/api/v1"
+    }
+  }
+}

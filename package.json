@@ -1,0 +1,35 @@
+{
+  "name": "urbanly",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Urbanly — şehir keşfi, öneri ve sosyal topluluk uygulaması",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "api:dev": "npm run dev --workspace=@urbanly/api",
+    "api:build": "npm run build --workspace=@urbanly/api",
+    "api:test": "npm run test --workspace=@urbanly/api",
+    "mobile:start": "npm run start --workspace=@urbanly/mobile",
+    "start": "npm run start --workspace=@urbanly/mobile",
+    "shared:build": "npm run build --workspace=@urbanly/shared",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "esbuild@0.21.5": true,
+    "prisma@6.19.3": true,
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true
+  }
+}

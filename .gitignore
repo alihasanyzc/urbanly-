@@ -1,0 +1,51 @@
+# Bağımlılıklar
+node_modules/
+.pnp
+.pnp.js
+
+# Build çıktıları
+dist/
+build/
+*.tsbuildinfo
+
+# Env — ASLA commit edilmez (bkz. CLAUDE.md §5.1)
+.env
+.env.*
+!.env.example
+
+# Prisma
+apps/api/prisma/*.db
+
+# Expo / React Native
+.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Loglar
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# OS / editör
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Test / coverage
+coverage/
+
+# Metro / Expo ek
+.metro-health-check*
+*.tgz
+
+# Expo native prebuild çıktıları (managed workflow'da commit edilmez)
+/apps/mobile/ios/
+/apps/mobile/android/
