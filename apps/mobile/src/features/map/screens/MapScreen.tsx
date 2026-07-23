@@ -44,14 +44,15 @@ export function MapScreen({ navigation }: Props) {
   }, [requestLocation]);
 
   // Kategori TEK seçim (filtre görevi). Seçili mekân: null → bottom sheet kapalı.
+  // Sheet YALNIZCA bir marker'a basınca açılır; kategori filtresi sheet açmaz.
   const [activeCategory, setActiveCategory] = useState<PlaceCategory | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const places = useMemo(() => filterPlaces(MOCK_PLACES, activeCategory), [activeCategory]);
 
-  // Filtre değişince ilk mekânı seç (yeni listenin başı).
+  // Filtre değişince açık kartı kapat — kategori seçimi yalnızca markerları süzer, sheet açmaz.
   useEffect(() => {
-    setSelectedIndex(places.length > 0 ? 0 : null);
+    setSelectedIndex(null);
   }, [places]);
 
   // Seçili mekân değiştiğinde haritayı ona ortala.
@@ -69,6 +70,21 @@ export function MapScreen({ navigation }: Props) {
       350,
     );
   }, [selectedIndex, places]);
+
+  // Bir marker'a basıldığında, aynı dokunuşla haritanın onPress'i de tetiklenip
+  // seçimi hemen kapatabiliyor. Son marker-press zamanını tutup harita press'ini kısa
+  // süre yok sayarak bunu engelliyoruz (marker seçimi kazanır).
+  const lastMarkerPressAt = useRef(0);
+
+  const handleMarkerPress = (index: number) => {
+    lastMarkerPressAt.current = Date.now();
+    setSelectedIndex(index);
+  };
+
+  const handleMapPress = () => {
+    if (Date.now() - lastMarkerPressAt.current < 250) return; // aynı dokunuş → yok say
+    setSelectedIndex(null);
+  };
 
   // Aynı kategoriye tekrar basınca filtre kalkar (tümü gösterilir).
   const selectCategory = (c: PlaceCategory) =>
@@ -89,7 +105,7 @@ export function MapScreen({ navigation }: Props) {
         showsMyLocationButton={false}
         toolbarEnabled={false}
         // Haritanın boş bir yerine (marker/kart dışına) dokununca bottom sheet kapanır.
-        onPress={() => setSelectedIndex(null)}
+        onPress={handleMapPress}
       >
         {places.map((place, index) => {
           const meta = CATEGORY_META[place.category];
@@ -98,7 +114,7 @@ export function MapScreen({ navigation }: Props) {
             <Marker
               key={place.id}
               coordinate={{ latitude: place.location.lat, longitude: place.location.lng }}
-              onPress={() => setSelectedIndex(index)}
+              onPress={() => handleMarkerPress(index)}
               anchor={{ x: 0.5, y: 0.5 }}
             >
               <View
