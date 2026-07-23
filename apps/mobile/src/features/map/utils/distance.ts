@@ -1,6 +1,9 @@
 import type { GeoPoint } from '@urbanly/shared';
 
-/** İki koordinat arası kuş uçuşu mesafe (km) — Haversine. */
+/**
+ * İki koordinat arası kuş uçuşu mesafe (km) — Haversine formülü.
+ * Küresel yaklaşım; şehir içi mesafelerde yeterli, PostGIS gerektirmez.
+ */
 export function distanceKm(a: GeoPoint, b: GeoPoint): number {
   const R = 6371; // Dünya yarıçapı (km)
   const dLat = toRad(b.lat - a.lat);
@@ -13,7 +16,7 @@ export function distanceKm(a: GeoPoint, b: GeoPoint): number {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-/** Mesafeyi insan-okur biçime çevirir: <1 km ise metre. */
+/** Mesafeyi insan-okur biçime çevirir: 1 km altını metre olarak gösterir. */
 export function formatDistance(km: number): string {
   if (km < 1) return `${Math.round(km * 1000)} m`;
   return `${km.toFixed(1)} km`;

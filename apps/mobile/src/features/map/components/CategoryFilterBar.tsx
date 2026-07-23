@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import type { PlaceCategory } from '@urbanly/shared';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
-import { theme } from '../../theme';
-import { CATEGORY_META, CATEGORY_ORDER } from './mapCategories';
+import { theme } from '../../../theme';
+import { CATEGORY_META, CATEGORY_ORDER } from '../data/categories';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -56,10 +56,7 @@ function Chip({ icon, label, active, activeColor, onPress }: ChipProps) {
       accessibilityLabel={`${label} filtresi`}
       hitSlop={8}
       onPress={onPress}
-      style={[
-        styles.chip,
-        active && { backgroundColor: activeColor, borderColor: activeColor },
-      ]}
+      style={[styles.chip, active && { backgroundColor: activeColor, borderColor: activeColor }]}
     >
       <Ionicons name={icon} size={16} color={active ? '#ffffff' : activeColor} />
       <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>{label}</Text>
@@ -77,7 +74,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing(1),
-    minHeight: 44,
+    minHeight: 44, // erişilebilir dokunma hedefi (bkz. CLAUDE.md §5.2)
     paddingHorizontal: theme.spacing(3),
     borderRadius: 999,
     borderWidth: 1,

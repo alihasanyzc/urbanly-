@@ -7,7 +7,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { theme } from '../../theme';
+import { theme } from '../../../theme';
 
 interface Props {
   images: string[];
@@ -16,11 +16,15 @@ interface Props {
   borderRadius?: number;
 }
 
-/** Sağa-sola kaydırılabilir görsel galerisi + alt nokta göstergesi. */
+/**
+ * Sağa-sola kaydırılabilir görsel galerisi + alt nokta göstergesi.
+ * `pagingEnabled` ile her kaydırma tam bir görsele oturur; aktif nokta uzayarak vurgulanır.
+ */
 export function ImageGallery({ images, width, height, borderRadius = 0 }: Props) {
   const [index, setIndex] = useState(0);
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // Kaydırma bitince görünen görselin indeksini offset'ten türet.
     const i = Math.round(e.nativeEvent.contentOffset.x / width);
     if (i !== index) setIndex(i);
   };

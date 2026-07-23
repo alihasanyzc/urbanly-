@@ -1,6 +1,5 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { MapScreen } from '../features/map/MapScreen';
-import { PlaceDetailScreen } from '../features/map/PlaceDetailScreen';
+import { MapScreen, PlaceDetailScreen } from '../features/map';
 import { PlacesListScreen } from '../features/places/PlacesListScreen';
 
 export type RootStackParamList = {

@@ -3,7 +3,9 @@ import { Linking, Platform } from 'react-native';
 
 /**
  * Cihazın harita uygulamasında hedefe yol tarifi açar.
- * iOS → Apple Maps, Android → Google Maps; başarısızsa web Google Maps'e düşer.
+ *
+ * Önce platforma özel derin bağlantıyı dener (iOS → Apple Maps, Android → Google Maps).
+ * Uygulama kurulu değilse veya açılamazsa web Google Maps'e düşer; böylece her cihazda çalışır.
  */
 export async function openDirections(dest: GeoPoint, label?: string): Promise<void> {
   const latLng = `${dest.lat},${dest.lng}`;
@@ -23,7 +25,7 @@ export async function openDirections(dest: GeoPoint, label?: string): Promise<vo
       return;
     }
   } catch {
-    // Yerel uygulama açılamadı — web'e düş.
+    // Yerel harita uygulaması açılamadı — sessizce web'e düşüyoruz.
   }
   await Linking.openURL(webUrl);
 }

@@ -2,13 +2,22 @@ import type { PlaceAmenity, PlaceCategory, PlaceTag } from '@urbanly/shared';
 import type { ComponentProps } from 'react';
 import type { Ionicons } from '@expo/vector-icons';
 
+/**
+ * Harita özelliğinin görsel sözlüğü.
+ *
+ * Kategori/etiket/olanak gibi domain enum'larını (packages/shared) tek bir yerden
+ * ikon + etiket + renk'e eşler. Böylece bir kategori eklendiğinde/rengi değiştiğinde
+ * yalnızca bu dosya güncellenir; bileşenler serbest kalır (tek doğruluk kaynağı).
+ */
+
+/** `@expo/vector-icons` Ionicons ikon adlarının tip-güvenli birleşimi. */
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 /** Harita marker'ı ve filtre çipi için kategori görselleştirmesi (Ionicons outline). */
 export interface CategoryMeta {
   icon: IoniconName;
   label: string;
-  color: string; // marker rengi
+  color: string; // marker + rozet rengi
 }
 
 export const CATEGORY_META: Record<PlaceCategory, CategoryMeta> = {

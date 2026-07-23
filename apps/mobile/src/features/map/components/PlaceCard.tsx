@@ -2,13 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import type { Place } from '@urbanly/shared';
 import { BlurView } from 'expo-blur';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { theme } from '../../theme';
-import { distanceKm, formatDistance } from './distance';
-import { openDirections } from './directions';
+import { theme } from '../../../theme';
+import { useLocationStore } from '../../../store/location.store';
+import { CATEGORY_META, TAG_META } from '../data/categories';
+import { MOCK_ORIGIN } from '../data/mockPlaces';
+import { distanceKm, formatDistance } from '../utils/distance';
+import { openDirections } from '../utils/directions';
 import { ImageGallery } from './ImageGallery';
-import { useLocationStore } from '../../store/location.store';
-import { CATEGORY_META, TAG_META } from './mapCategories';
-import { MOCK_ORIGIN } from './mockPlaces';
 
 const IMAGE_HEIGHT = 168;
 
@@ -18,22 +18,26 @@ interface Props {
   onPressDetail: (place: Place) => void;
 }
 
-/** Bottom sheet'te tek mekânın glassmorphism (buzlu cam) önizleme kartı. */
+/**
+ * Bottom sheet'te tek mekânın glassmorphism (buzlu cam) önizleme kartı.
+ * Kart gövdesine dokunmak detayı açar; alttaki buton yol tarifini başlatır.
+ */
 export function PlaceCard({ place, width, onPressDetail }: Props) {
   const cat = CATEGORY_META[place.category];
+  // Mesafe kullanıcının konumundan; izin yoksa mock merkeze düşer.
   const origin = useLocationStore((s) => s.coords) ?? MOCK_ORIGIN;
   const dist = formatDistance(distanceKm(origin, place.location));
   const images = place.images.length > 0 ? place.images : place.imageUrl ? [place.imageUrl] : [];
 
   return (
-    // Dış katman: gölge + yuvarlak köşe (overflow: visible — iOS'ta gölge için).
+    // Dış katman: gölge + yuvarlak köşe (overflow bırakılır — iOS'ta gölgenin kırpılmaması için).
     <View style={[styles.shadow, { width }]}>
-      {/* İç katman: buzlu cam + kırpma. */}
+      {/* İç katman: buzlu cam + köşe kırpma. */}
       <View style={styles.clip}>
         <BlurView intensity={55} tint="light" style={StyleSheet.absoluteFill} />
         <View style={styles.tint} pointerEvents="none" />
 
-        {/* Görsel galerisi — sağa-sola kaydırılır */}
+        {/* Görsel galerisi — sağa-sola kaydırılır. Üstünde kategori rozeti ve puan. */}
         <View>
           <ImageGallery images={images} width={width} height={IMAGE_HEIGHT} />
           <View style={[styles.badge, { backgroundColor: cat.color }]}>
@@ -49,7 +53,7 @@ export function PlaceCard({ place, width, onPressDetail }: Props) {
           )}
         </View>
 
-        {/* Bilgi — dokununca detay açılır */}
+        {/* Bilgi bloğu — dokununca detay ekranı açılır. */}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`${place.name} detayını aç`}
@@ -80,7 +84,7 @@ export function PlaceCard({ place, width, onPressDetail }: Props) {
           )}
         </Pressable>
 
-        {/* Ana aksiyon: Yol Tarifi */}
+        {/* Ana aksiyon: Yol Tarifi. */}
         <View style={styles.actions}>
           <Pressable
             accessibilityRole="button"
@@ -88,7 +92,6 @@ export function PlaceCard({ place, width, onPressDetail }: Props) {
             onPress={() => void openDirections(place.location, place.name)}
             style={({ pressed }) => [styles.directionsBtn, pressed && styles.pressed]}
           >
-            <Ionicons name="airplane-outline" size={18} color="#ffffff" />
             <Text style={styles.directionsText}>Yol Tarifi</Text>
           </Pressable>
         </View>

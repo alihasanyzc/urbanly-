@@ -2,12 +2,16 @@ import type { GeoPoint, Place } from '@urbanly/shared';
 
 /**
  * Frontend geliştirme için sahte mekân verisi (İstanbul).
- * Her mekânın detay alanları (saat, fiyat, olanak, etiket) kategorisine uygun tutulur.
- * Backend hazır olunca `fetchPlaces` ile değiştirilecek — sadece UI'ı beslemek için.
+ *
+ * Her mekânın detay alanları (saat, fiyat, olanak, etiket) kategorisine uygun tutulur —
+ * ör. tarihi yerde "ücretsiz giriş", parkta fiyat yok, kafede "wifi + priz".
+ * Backend hazır olunca bu dosya `fetchPlaces` ile değiştirilecek; şimdilik yalnızca UI'ı besler.
  */
-export const MOCK_ORIGIN: GeoPoint = { lat: 41.0082, lng: 28.9784 }; // Sultanahmet civarı
 
-/** Her mekâna galeri üretir (bottom sheet'te kaydırılır). */
+/** Konum izni yokken mesafe/merkez hesabı için başlangıç noktası (Sultanahmet). */
+export const MOCK_ORIGIN: GeoPoint = { lat: 41.0082, lng: 28.9784 };
+
+/** Bir mekân için deterministik galeri üretir (bottom sheet ve detayda kaydırılır). */
 function gallery(seed: string, n = 3): string[] {
   return Array.from({ length: n }, (_, i) => `https://picsum.photos/seed/${seed}${i}/900/600`);
 }

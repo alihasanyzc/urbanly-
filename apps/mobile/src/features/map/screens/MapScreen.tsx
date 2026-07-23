@@ -5,13 +5,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, type Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocationStore } from '../../store/location.store';
-import type { RootStackParamList } from '../../navigation/RootNavigator';
-import { theme } from '../../theme';
-import { CategoryFilterBar } from './CategoryFilterBar';
-import { CATEGORY_META } from './mapCategories';
-import { MOCK_ORIGIN, MOCK_PLACES } from './mockPlaces';
-import { PlaceBottomSheet } from './PlaceBottomSheet';
+import type { RootStackParamList } from '../../../navigation/RootNavigator';
+import { useLocationStore } from '../../../store/location.store';
+import { theme } from '../../../theme';
+import { CategoryFilterBar } from '../components/CategoryFilterBar';
+import { PlaceBottomSheet } from '../components/PlaceBottomSheet';
+import { CATEGORY_META } from '../data/categories';
+import { MOCK_ORIGIN, MOCK_PLACES } from '../data/mockPlaces';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Map'>;
 
@@ -25,7 +25,13 @@ const INITIAL_REGION: Region = {
   longitudeDelta: 0.12,
 };
 
-/** Keşif haritası — kategori ikonlu markerlar + seçili mekân bottom sheet'i. */
+/** Kategori seçili değilse tümü, seçiliyse yalnız o kategori. */
+function filterPlaces(all: Place[], category: PlaceCategory | null): Place[] {
+  if (!category) return all;
+  return all.filter((p) => p.category === category);
+}
+
+/** Ana ekran — kategori ikonlu markerlar + seçili mekân bottom sheet'i. */
 export function MapScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
@@ -37,19 +43,20 @@ export function MapScreen({ navigation }: Props) {
     void requestLocation();
   }, [requestLocation]);
 
-  // Kategori TEK seçim (filtre görevi): bir kategori seçilince sadece o gösterilir.
+  // Kategori TEK seçim (filtre görevi). Seçili mekân: null → bottom sheet kapalı.
   const [activeCategory, setActiveCategory] = useState<PlaceCategory | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
 
   const places = useMemo(() => filterPlaces(MOCK_PLACES, activeCategory), [activeCategory]);
 
-  // Filtre değişince seçim başa döner.
+  // Filtre değişince ilk mekânı seç (yeni listenin başı).
   useEffect(() => {
-    setSelectedIndex(0);
+    setSelectedIndex(places.length > 0 ? 0 : null);
   }, [places]);
 
-  // Seçili mekâna haritayı ortala.
+  // Seçili mekân değiştiğinde haritayı ona ortala.
   useEffect(() => {
+    if (selectedIndex == null) return;
     const place = places[selectedIndex];
     if (!place) return;
     mapRef.current?.animateToRegion(
@@ -63,14 +70,14 @@ export function MapScreen({ navigation }: Props) {
     );
   }, [selectedIndex, places]);
 
-  // Aynı kategoriye tekrar basınca filtre kalkar (tümü).
+  // Aynı kategoriye tekrar basınca filtre kalkar (tümü gösterilir).
   const selectCategory = (c: PlaceCategory) =>
     setActiveCategory((prev) => (prev === c ? null : c));
 
   const openDetail = (place: Place) =>
     navigation.navigate('PlaceDetail', { placeId: place.id });
 
-  const selected = places[selectedIndex];
+  const selected = selectedIndex != null ? places[selectedIndex] : undefined;
 
   return (
     <View style={styles.root}>
@@ -81,6 +88,8 @@ export function MapScreen({ navigation }: Props) {
         showsUserLocation={locationStatus === 'granted'}
         showsMyLocationButton={false}
         toolbarEnabled={false}
+        // Haritanın boş bir yerine (marker/kart dışına) dokununca bottom sheet kapanır.
+        onPress={() => setSelectedIndex(null)}
       >
         {places.map((place, index) => {
           const meta = CATEGORY_META[place.category];
@@ -96,17 +105,10 @@ export function MapScreen({ navigation }: Props) {
                 style={[
                   styles.marker,
                   { borderColor: meta.color },
-                  isSelected && {
-                    backgroundColor: meta.color,
-                    transform: [{ scale: 1.15 }],
-                  },
+                  isSelected && { backgroundColor: meta.color, transform: [{ scale: 1.15 }] },
                 ]}
               >
-                <Ionicons
-                  name={meta.icon}
-                  size={18}
-                  color={isSelected ? '#ffffff' : meta.color}
-                />
+                <Ionicons name={meta.icon} size={18} color={isSelected ? '#ffffff' : meta.color} />
               </View>
             </Marker>
           );
@@ -118,10 +120,10 @@ export function MapScreen({ navigation }: Props) {
         <CategoryFilterBar activeCategory={activeCategory} onSelectCategory={selectCategory} />
       </View>
 
-      {/* Alt kart / boş durum */}
+      {/* Alt bölge: seçili mekân kartı, sonuç yoksa boş durum, kapalıysa hiçbir şey. */}
       {selected ? (
         <PlaceBottomSheet place={selected} cardWidth={CARD_WIDTH} onPressDetail={openDetail} />
-      ) : (
+      ) : places.length === 0 ? (
         <View style={[styles.empty, { paddingBottom: insets.bottom + theme.spacing(4) }]}>
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>Bu filtrede mekân yok.</Text>
@@ -134,15 +136,9 @@ export function MapScreen({ navigation }: Props) {
             </Pressable>
           </View>
         </View>
-      )}
+      ) : null}
     </View>
   );
-}
-
-/** Kategori seçili değilse tümü, seçiliyse yalnız o kategori. */
-function filterPlaces(all: Place[], category: PlaceCategory | null): Place[] {
-  if (!category) return all;
-  return all.filter((p) => p.category === category);
 }
 
 const styles = StyleSheet.create({

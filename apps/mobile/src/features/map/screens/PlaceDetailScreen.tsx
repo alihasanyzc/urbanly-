@@ -3,14 +3,14 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Dimensions, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocationStore } from '../../store/location.store';
-import type { RootStackParamList } from '../../navigation/RootNavigator';
-import { theme } from '../../theme';
-import { distanceKm, formatDistance } from './distance';
-import { openDirections } from './directions';
-import { ImageGallery } from './ImageGallery';
-import { AMENITY_META, CATEGORY_META, TAG_META } from './mapCategories';
-import { MOCK_ORIGIN, MOCK_PLACES } from './mockPlaces';
+import type { RootStackParamList } from '../../../navigation/RootNavigator';
+import { useLocationStore } from '../../../store/location.store';
+import { theme } from '../../../theme';
+import { ImageGallery } from '../components/ImageGallery';
+import { AMENITY_META, CATEGORY_META, TAG_META } from '../data/categories';
+import { MOCK_ORIGIN, MOCK_PLACES } from '../data/mockPlaces';
+import { distanceKm, formatDistance } from '../utils/distance';
+import { openDirections } from '../utils/directions';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PlaceDetail'>;
 
@@ -22,6 +22,7 @@ export function PlaceDetailScreen({ route }: Props) {
   const origin = useLocationStore((s) => s.coords) ?? MOCK_ORIGIN;
   const place = MOCK_PLACES.find((p) => p.id === route.params.placeId);
 
+  // Detay verisi mock listesinden çözülür; backend gelince fetch ile değişecek.
   if (!place) {
     return (
       <View style={styles.center}>
@@ -44,7 +45,7 @@ export function PlaceDetailScreen({ route }: Props) {
         <ImageGallery images={images} width={SCREEN_W} height={280} />
 
         <View style={styles.body}>
-          {/* Başlık */}
+          {/* Başlık: kategori rozeti + isim + puan/fiyat/mesafe. */}
           <View style={[styles.badge, { backgroundColor: cat.color }]}>
             <Ionicons name={cat.icon} size={13} color="#ffffff" />
             <Text style={styles.badgeText}>{cat.label}</Text>
@@ -68,7 +69,7 @@ export function PlaceDetailScreen({ route }: Props) {
 
           {place.description && <Text style={styles.desc}>{place.description}</Text>}
 
-          {/* Etiketler */}
+          {/* Etiketler (kategoriden bağımsız özellikler) */}
           {place.tags.length > 0 && (
             <View style={styles.tagRow}>
               {place.tags.map((t) => (
@@ -82,7 +83,7 @@ export function PlaceDetailScreen({ route }: Props) {
 
           <Divider />
 
-          {/* Bilgi satırları */}
+          {/* Bilgi satırları — yalnızca dolu alanlar gösterilir; telefon/web dokunulabilir. */}
           <View style={styles.infoBlock}>
             {place.openHours && <InfoRow icon="time-outline" text={place.openHours} />}
             {place.address && <InfoRow icon="location-outline" text={place.address} />}
@@ -102,7 +103,7 @@ export function PlaceDetailScreen({ route }: Props) {
             )}
           </View>
 
-          {/* Özellikler */}
+          {/* Özellikler (olanaklar) */}
           {place.amenities.length > 0 && (
             <>
               <Divider />
@@ -120,7 +121,7 @@ export function PlaceDetailScreen({ route }: Props) {
 
           <Divider />
 
-          {/* Mini harita */}
+          {/* Mini harita — statik önizleme (dokunma kapalı). */}
           <Text style={styles.sectionTitle}>Konum</Text>
           <View style={styles.mapWrap}>
             <MapView
@@ -151,7 +152,6 @@ export function PlaceDetailScreen({ route }: Props) {
           onPress={() => void openDirections(place.location, place.name)}
           style={({ pressed }) => [styles.directionsBtn, pressed && styles.pressed]}
         >
-          <Ionicons name="airplane-outline" size={18} color="#ffffff" />
           <Text style={styles.directionsText}>Yol Tarifi</Text>
         </Pressable>
       </View>
@@ -159,6 +159,7 @@ export function PlaceDetailScreen({ route }: Props) {
   );
 }
 
+/** Tek bir bilgi satırı (ikon + metin). onPress verilirse dokunulabilir bağlantı olur. */
 function InfoRow({
   icon,
   text,
