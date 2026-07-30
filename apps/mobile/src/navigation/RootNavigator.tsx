@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MapScreen, PlaceDetailScreen } from '../features/map';
-import { CommunityScreen } from '../features/community/CommunityScreen';
+import { CommunityScreen } from '../features/community';
 import { FriendsScreen } from '../features/friends/FriendsScreen';
 import { ProfileScreen } from '../features/profile/ProfileScreen';
 import { CreatePostScreen } from '../features/create/CreatePostScreen';
