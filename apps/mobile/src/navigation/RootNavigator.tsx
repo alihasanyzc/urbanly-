@@ -3,16 +3,17 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MapScreen, PlaceDetailScreen } from '../features/map';
 import { CommunityScreen } from '../features/community';
-import { FriendsScreen } from '../features/friends/FriendsScreen';
+import { ExploreWithMeScreen } from '../features/explore-with-me';
 import { ProfileScreen } from '../features/profile/ProfileScreen';
 import { CreatePostScreen } from '../features/create/CreatePostScreen';
 import { GlassTabBar } from './GlassTabBar';
+import { theme } from '../theme';
 
 /** Alt sekmeler — glassmorphism tab bar tarafından çizilir (bkz. GlassTabBar). */
 export type TabParamList = {
   Kesfet: undefined;
   Topluluk: undefined;
-  ArkadasAra: undefined;
+  BenimleGez: undefined;
   Profil: undefined;
 };
 
@@ -36,7 +37,7 @@ function MainTabs() {
     >
       <Tab.Screen name="Kesfet" component={MapScreen} />
       <Tab.Screen name="Topluluk" component={CommunityScreen} />
-      <Tab.Screen name="ArkadasAra" component={FriendsScreen} />
+      <Tab.Screen name="BenimleGez" component={ExploreWithMeScreen} />
       <Tab.Screen name="Profil" component={ProfileScreen} />
     </Tab.Navigator>
   );
@@ -44,7 +45,8 @@ function MainTabs() {
 
 export function RootNavigator() {
   return (
-    <Stack.Navigator>
+    // Header geri/aksiyon rengi marka moru (varsayılan iOS mavisi yerine).
+    <Stack.Navigator screenOptions={{ headerTintColor: theme.colors.primary }}>
       <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
       <Stack.Screen name="PlaceDetail" component={PlaceDetailScreen} options={{ title: 'Mekân' }} />
       <Stack.Screen

@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#eff6ff',
+    backgroundColor: theme.colors.primaryTint,
   },
   optionLabel: { flex: 1, fontSize: 15, fontWeight: '600', color: theme.colors.text },
   note: { marginTop: theme.spacing(4), fontSize: 13, color: theme.colors.muted, textAlign: 'center' },

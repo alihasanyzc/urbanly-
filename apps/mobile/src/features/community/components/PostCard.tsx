@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     paddingRight: theme.spacing(2),
     paddingVertical: theme.spacing(2),
     borderRadius: 999,
-    backgroundColor: '#eff6ff',
+    backgroundColor: theme.colors.primaryTint,
   },
   pressed: { opacity: 0.8 },
   placeName: { fontSize: 13, fontWeight: '700', color: theme.colors.primary, maxWidth: 200 },

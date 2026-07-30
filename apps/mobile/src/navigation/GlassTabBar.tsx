@@ -15,7 +15,7 @@ type IoniconName = ComponentProps<typeof Ionicons>['name'];
 const TAB_META: Record<string, { icon: IoniconName; iconActive: IoniconName; label: string }> = {
   Kesfet: { icon: 'map-outline', iconActive: 'map', label: 'Keşfet' },
   Topluluk: { icon: 'people-outline', iconActive: 'people', label: 'Topluluk' },
-  ArkadasAra: { icon: 'person-add-outline', iconActive: 'person-add', label: 'Arkadaş' },
+  BenimleGez: { icon: 'navigate-outline', iconActive: 'navigate', label: 'Gez' },
   Profil: { icon: 'person-outline', iconActive: 'person', label: 'Profil' },
 };
 
@@ -65,7 +65,9 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
           size={24}
           color={focused ? theme.colors.primary : isDark ? '#9ca3af' : theme.colors.muted}
         />
-        <Text style={[styles.label, focused && styles.labelActive]}>{meta?.label}</Text>
+        <Text numberOfLines={1} style={[styles.label, focused && styles.labelActive]}>
+          {meta?.label}
+        </Text>
       </Pressable>
     );
   };

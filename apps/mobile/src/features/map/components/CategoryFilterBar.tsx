@@ -14,8 +14,8 @@ interface Props {
   onClear: () => void;
 }
 
-/** "Tümü" çipinin sabit rengi (kategori nötr — marka mavisi). */
-const ALL_COLOR = '#2563eb';
+/** "Tümü" çipinin sabit rengi (kategori nötr — marka moru). */
+const ALL_COLOR = theme.colors.primary;
 
 /**
  * Harita üstündeki yatay kategori filtre çubuğu.

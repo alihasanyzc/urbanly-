@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#eff6ff', // primary'nin çok açık tonu
+    backgroundColor: theme.colors.primaryTint, // primary'nin çok açık tonu
     marginBottom: theme.spacing(2),
   },
   title: { fontSize: 20, fontWeight: '700', color: theme.colors.text },
