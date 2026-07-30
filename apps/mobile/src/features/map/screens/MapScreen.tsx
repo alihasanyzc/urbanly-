@@ -1,19 +1,25 @@
 import { Ionicons } from '@expo/vector-icons';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { CompositeScreenProps } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { Place, PlaceCategory } from '@urbanly/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, type Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { RootStackParamList } from '../../../navigation/RootNavigator';
+import type { RootStackParamList, TabParamList } from '../../../navigation/RootNavigator';
 import { useLocationStore } from '../../../store/location.store';
 import { theme } from '../../../theme';
 import { CategoryFilterBar } from '../components/CategoryFilterBar';
 import { PlaceBottomSheet } from '../components/PlaceBottomSheet';
 import { CATEGORY_META } from '../data/categories';
 import { MOCK_ORIGIN, MOCK_PLACES } from '../data/mockPlaces';
+import { TAB_BAR_HEIGHT } from '../../../navigation/tabBarLayout';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Map'>;
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'Kesfet'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 const { width: SCREEN_W } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_W - theme.spacing(4) * 2;
@@ -53,6 +59,23 @@ export function MapScreen({ navigation }: Props) {
   // Filtre değişince açık kartı kapat — kategori seçimi yalnızca markerları süzer, sheet açmaz.
   useEffect(() => {
     setSelectedIndex(null);
+  }, [places]);
+
+  // Filtre değişince haritayı görünür mekânlara sığdır (tek mekânda ona yakınlaş).
+  useEffect(() => {
+    if (places.length === 0) return;
+    if (places.length === 1) {
+      const p = places[0];
+      mapRef.current?.animateToRegion(
+        { latitude: p.location.lat, longitude: p.location.lng, latitudeDelta: 0.03, longitudeDelta: 0.03 },
+        350,
+      );
+      return;
+    }
+    mapRef.current?.fitToCoordinates(
+      places.map((p) => ({ latitude: p.location.lat, longitude: p.location.lng })),
+      { edgePadding: { top: 120, right: 60, bottom: 160, left: 60 }, animated: true },
+    );
   }, [places]);
 
   // Seçili mekân değiştiğinde haritayı ona ortala.
@@ -108,39 +131,34 @@ export function MapScreen({ navigation }: Props) {
         onPress={handleMapPress}
       >
         {places.map((place, index) => {
-          const meta = CATEGORY_META[place.category];
           const isSelected = index === selectedIndex;
           return (
-            <Marker
-              key={place.id}
-              coordinate={{ latitude: place.location.lat, longitude: place.location.lng }}
+            <PlaceMarker
+              // Filtre değişince marker'ları yeniden mount et: react-native-maps aksi halde
+              // filtreden çıkıp "Tümü"ye dönünce kaldırılan marker'ları yeniden eklemiyor.
+              key={`${activeCategory ?? 'all'}-${place.id}`}
+              place={place}
+              isSelected={isSelected}
               onPress={() => handleMarkerPress(index)}
-              anchor={{ x: 0.5, y: 0.5 }}
-            >
-              <View
-                style={[
-                  styles.marker,
-                  { borderColor: meta.color },
-                  isSelected && { backgroundColor: meta.color, transform: [{ scale: 1.15 }] },
-                ]}
-              >
-                <Ionicons name={meta.icon} size={18} color={isSelected ? '#ffffff' : meta.color} />
-              </View>
-            </Marker>
+            />
           );
         })}
       </MapView>
 
       {/* Üst filtre çubuğu */}
       <View style={[styles.topBar, { paddingTop: insets.top + theme.spacing(2) }]}>
-        <CategoryFilterBar activeCategory={activeCategory} onSelectCategory={selectCategory} />
+        <CategoryFilterBar
+          activeCategory={activeCategory}
+          onSelectCategory={selectCategory}
+          onClear={() => setActiveCategory(null)}
+        />
       </View>
 
       {/* Alt bölge: seçili mekân kartı, sonuç yoksa boş durum, kapalıysa hiçbir şey. */}
       {selected ? (
         <PlaceBottomSheet place={selected} cardWidth={CARD_WIDTH} onPressDetail={openDetail} />
       ) : places.length === 0 ? (
-        <View style={[styles.empty, { paddingBottom: insets.bottom + theme.spacing(4) }]}>
+        <View style={[styles.empty, { paddingBottom: insets.bottom + TAB_BAR_HEIGHT + theme.spacing(4) }]}>
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>Bu filtrede mekân yok.</Text>
             <Pressable
@@ -154,6 +172,52 @@ export function MapScreen({ navigation }: Props) {
         </View>
       ) : null}
     </View>
+  );
+}
+
+/**
+ * Kategori ikonlu harita marker'ı.
+ *
+ * `tracksViewChanges`: Yeni mimaride (Fabric) react-native-maps, özel View içerikli
+ * marker'ı ilk karede yakalayamayıp boş/görünmez bırakabiliyor. İlk çizimde (ve seçim
+ * değişiminde) kısa süre `true` tutup sonra `false`'a çekerek marker'ı bir kez yeniden
+ * çizmeye zorluyoruz; bu hem görünürlüğü hem de performansı sağlar.
+ */
+function PlaceMarker({
+  place,
+  isSelected,
+  onPress,
+}: {
+  place: Place;
+  isSelected: boolean;
+  onPress: () => void;
+}) {
+  const meta = CATEGORY_META[place.category];
+  const [tracks, setTracks] = useState(true);
+
+  useEffect(() => {
+    setTracks(true);
+    const t = setTimeout(() => setTracks(false), 600);
+    return () => clearTimeout(t);
+  }, [isSelected]);
+
+  return (
+    <Marker
+      coordinate={{ latitude: place.location.lat, longitude: place.location.lng }}
+      onPress={onPress}
+      anchor={{ x: 0.5, y: 0.5 }}
+      tracksViewChanges={tracks}
+    >
+      <View
+        style={[
+          styles.marker,
+          { borderColor: meta.color },
+          isSelected && { backgroundColor: meta.color, transform: [{ scale: 1.15 }] },
+        ]}
+      >
+        <Ionicons name={meta.icon} size={18} color={isSelected ? '#ffffff' : meta.color} />
+      </View>
+    </Marker>
   );
 }
 

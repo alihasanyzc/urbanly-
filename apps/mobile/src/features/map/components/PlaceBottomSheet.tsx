@@ -2,6 +2,7 @@ import type { Place } from '@urbanly/shared';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../theme';
+import { TAB_BAR_HEIGHT } from '../../../navigation/tabBarLayout';
 import { PlaceCard } from './PlaceCard';
 
 interface Props {
@@ -20,7 +21,7 @@ export function PlaceBottomSheet({ place, cardWidth, onPressDetail }: Props) {
 
   return (
     <View
-      style={[styles.sheet, { paddingBottom: insets.bottom + theme.spacing(3) }]}
+      style={[styles.sheet, { paddingBottom: insets.bottom + TAB_BAR_HEIGHT + theme.spacing(3) }]}
       pointerEvents="box-none"
     >
       <PlaceCard place={place} width={cardWidth} onPressDetail={onPressDetail} />
