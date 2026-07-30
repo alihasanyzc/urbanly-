@@ -10,19 +10,32 @@ type IoniconName = ComponentProps<typeof Ionicons>['name'];
 interface Props {
   activeCategory: PlaceCategory | null;
   onSelectCategory: (c: PlaceCategory) => void;
+  /** "Tümü" çipine basınca filtreyi temizler (tüm kategoriler gösterilir). */
+  onClear: () => void;
 }
+
+/** "Tümü" çipinin sabit rengi (kategori nötr — marka mavisi). */
+const ALL_COLOR = '#2563eb';
 
 /**
  * Harita üstündeki yatay kategori filtre çubuğu.
  * Kategoriler TEK seçim: birine basınca sadece o gösterilir, tekrar basınca temizlenir.
+ * Baştaki "Tümü" çipi filtreyi temizler ve hiçbir kategori seçili değilken aktiftir.
  */
-export function CategoryFilterBar({ activeCategory, onSelectCategory }: Props) {
+export function CategoryFilterBar({ activeCategory, onSelectCategory, onClear }: Props) {
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.row}
     >
+      <Chip
+        icon="apps-outline"
+        label="Tümü"
+        active={activeCategory === null}
+        activeColor={ALL_COLOR}
+        onPress={onClear}
+      />
       {CATEGORY_ORDER.map((c) => {
         const meta = CATEGORY_META[c];
         return (
