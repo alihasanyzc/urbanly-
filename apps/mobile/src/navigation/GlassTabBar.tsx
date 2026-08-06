@@ -23,7 +23,7 @@ const TAB_META: Record<string, { icon: IoniconName; iconActive: IoniconName; lab
  * Modern glassmorphism yüzen tab bar.
  *
  * - `expo-blur` ile cam efekti; yarı saydam kenar + gölge.
- * - 4 gerçek sekme; ortada normal "Oluştur" sekmesi içerik ekleme modalını (CreatePost) açar.
+ * - 4 gerçek sekme; ortada yükseltilmiş "+" içerik ekleme modalını (CreatePost) açar.
  * - Sekmeler outline ikon, aktif sekme dolu ikon + primary renk.
  */
 export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -83,21 +83,17 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
         >
           {left.map(renderTab)}
 
-          {/* Ortadaki normal "Oluştur" sekmesi — içerik ekleme modalını açar */}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Oluştur sekmesi"
-            onPress={openCreate}
-            hitSlop={8}
-            style={styles.tab}
-          >
-            <Ionicons
-              name="add-circle-outline"
-              size={24}
-              color={isDark ? '#9ca3af' : theme.colors.muted}
-            />
-            <Text style={styles.label}>Oluştur</Text>
-          </Pressable>
+          {/* Ortadaki yükseltilmiş "+" — içerik ekleme modalını açar */}
+          <View style={styles.centerSlot}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Paylaş"
+              onPress={openCreate}
+              style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
+            >
+              <Ionicons name="add" size={30} color="#ffffff" />
+            </Pressable>
+          </View>
 
           {right.map(renderTab)}
         </BlurView>
@@ -144,4 +140,22 @@ const styles = StyleSheet.create({
   },
   label: { fontSize: 11, fontWeight: '600', color: theme.colors.muted },
   labelActive: { color: theme.colors.primary },
+  centerSlot: { width: 64, alignItems: 'center', justifyContent: 'center' },
+  fab: {
+    width: 56,
+    height: 56,
+    borderRadius: 999,
+    marginTop: -28, // bar'ın üstüne taşar
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary,
+    borderWidth: 4,
+    borderColor: 'rgba(255,255,255,0.65)',
+    shadowColor: theme.colors.primary,
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
+  },
+  fabPressed: { opacity: 0.85, transform: [{ scale: 0.96 }] },
 });
