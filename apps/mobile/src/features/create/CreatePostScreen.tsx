@@ -8,15 +8,23 @@ import { theme } from '../../theme';
 type Props = NativeStackScreenProps<RootStackParamList, 'CreatePost'>;
 
 /**
- * Kartpostal aksiyonuyla açılan paylaşım/ekleme modalı — değerlendirme, fotoğraf, liste (P1 içerik üretimi).
+ * Profildeki Kartpostal oluştur aksiyonuyla açılan içerik modalı.
  * Şimdilik seçenekleri gösteren placeholder; ilgili ekranlar sonraki fazda bağlanacak.
  */
 export function CreatePostScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.root, { paddingTop: insets.top + theme.spacing(2) }]}>
+    <View
+      style={[
+        styles.root,
+        {
+          paddingTop: insets.top + theme.spacing(2),
+          paddingBottom: insets.bottom + theme.spacing(4),
+        },
+      ]}
+    >
       <View style={styles.header}>
-        <Text style={styles.title}>Paylaş</Text>
+        <Text style={styles.title}>Kartpostal oluştur</Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Kapat"
@@ -29,13 +37,15 @@ export function CreatePostScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.options}>
-        <Option icon="star-outline" label="Değerlendirme yaz" />
-        <Option icon="camera-outline" label="Fotoğraf paylaş" />
-        <Option icon="list-outline" label="Liste oluştur" />
+        <Option icon="star-outline" label="Mekân deneyimi paylaş" />
+        <Option icon="camera-outline" label="Fotoğraflı kartpostal" />
+        <Option icon="list-outline" label="Gezi listesi oluştur" />
         <Option icon="location-outline" label="Yeni mekân öner" />
       </View>
 
-      <Text style={styles.note}>Bu akışlar sonraki fazda etkinleşecek.</Text>
+      <Text selectable style={styles.note}>
+        Kartpostal düzenleme adımları sonraki fazda etkinleşecek.
+      </Text>
     </View>
   );
 }
@@ -72,8 +82,8 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, fontWeight: '700', color: theme.colors.text },
   close: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
@@ -101,5 +111,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#eff6ff',
   },
   optionLabel: { flex: 1, fontSize: 15, fontWeight: '600', color: theme.colors.text },
-  note: { marginTop: theme.spacing(4), fontSize: 13, color: theme.colors.muted, textAlign: 'center' },
+  note: {
+    marginTop: theme.spacing(4),
+    fontSize: 13,
+    color: theme.colors.muted,
+    textAlign: 'center',
+  },
 });

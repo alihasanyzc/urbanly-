@@ -1,14 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BlurView } from 'expo-blur';
 import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../theme';
 import { TAB_BAR_HEIGHT } from './tabBarLayout';
-import type { RootStackParamList } from './RootNavigator';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -24,21 +21,13 @@ const TAB_META: Record<string, { icon: IoniconName; iconActive: IoniconName; lab
  * Modern glassmorphism yüzen tab bar.
  *
  * - `expo-blur` ile cam efekti; yarı saydam kenar + gölge.
- * - Yol Arkadaşı sekmesinden sonra Kartpostal aksiyonu içerik ekleme modalını (CreatePost) açar.
- * - Sekmeler outline ikon, aktif sekme dolu ikon + primary renk.
+ * - Gerçek sekme rotaları eşit genişlikte ve dengeli gösterilir.
+ * - Sekmeler outline ikon, aktif sekme dolu ikon + kapsül vurgu kullanır.
  */
 export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
-
-  // Keşfet | Topluluk | Yol Arkadaşı | Kartpostal | Profil
-  const postcardIndex = Math.max(state.routes.length - 1, 0);
-  const left = state.routes.slice(0, postcardIndex);
-  const right = state.routes.slice(postcardIndex);
-
-  const openCreate = () =>
-    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('CreatePost');
 
   const renderTab = (route: (typeof state.routes)[number]) => {
     const index = state.routes.indexOf(route);
@@ -63,13 +52,15 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
         accessibilityLabel={options.tabBarAccessibilityLabel ?? `${meta?.label} sekmesi`}
         onPress={onPress}
         hitSlop={8}
-        style={styles.tab}
+        style={({ pressed }) => [styles.tab, pressed && styles.tabPressed]}
       >
-        <Ionicons
-          name={focused ? meta.iconActive : meta.icon}
-          size={24}
-          color={focused ? theme.colors.primary : isDark ? '#9ca3af' : theme.colors.muted}
-        />
+        <View style={[styles.iconCapsule, focused && styles.iconCapsuleActive]}>
+          <Ionicons
+            name={focused ? meta.iconActive : meta.icon}
+            size={22}
+            color={focused ? theme.colors.primary : isDark ? '#9ca3af' : theme.colors.muted}
+          />
+        </View>
         <Text style={[styles.label, focused && styles.labelActive]}>{meta?.label}</Text>
       </Pressable>
     );
@@ -89,24 +80,7 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
             { backgroundColor: isDark ? 'rgba(17,24,39,0.55)' : 'rgba(255,255,255,0.6)' },
           ]}
         >
-          {left.map(renderTab)}
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Kartpostal"
-            onPress={openCreate}
-            hitSlop={8}
-            style={styles.tab}
-          >
-            <MaterialCommunityIcons
-              name="postage-stamp"
-              size={24}
-              color={isDark ? '#9ca3af' : theme.colors.muted}
-            />
-            <Text style={styles.label}>Kartpostal</Text>
-          </Pressable>
-
-          {right.map(renderTab)}
+          {state.routes.map(renderTab)}
         </BlurView>
       </View>
     </View>
@@ -146,8 +120,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: 1,
     minHeight: 44, // erişilebilir dokunma hedefi (bkz. CLAUDE.md §5.2)
+    borderRadius: 20,
+  },
+  tabPressed: {
+    opacity: 0.72,
+  },
+  iconCapsule: {
+    minWidth: 40,
+    height: 28,
+    paddingHorizontal: theme.spacing(2),
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconCapsuleActive: {
+    backgroundColor: 'rgba(37,99,235,0.12)',
   },
   label: { fontSize: 11, fontWeight: '600', color: theme.colors.muted },
   labelActive: { color: theme.colors.primary },
