@@ -3,6 +3,7 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MapScreen, PlaceDetailScreen } from '../features/map';
 import { CommunityScreen } from '../features/community/CommunityScreen';
+import { CommentsModalScreen } from '../features/community/comments-modal-screen';
 import { FriendsScreen } from '../features/friends/FriendsScreen';
 import { ProfileScreen } from '../features/profile/ProfileScreen';
 import { CreatePostScreen } from '../features/create/CreatePostScreen';
@@ -21,6 +22,7 @@ export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   PlaceDetail: { placeId: string };
   CreatePost: undefined;
+  PostComments: { postId: string };
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -50,6 +52,11 @@ export function RootNavigator() {
       <Stack.Screen
         name="CreatePost"
         component={CreatePostScreen}
+        options={{ presentation: 'modal', headerShown: false }}
+      />
+      <Stack.Screen
+        name="PostComments"
+        component={CommentsModalScreen}
         options={{ presentation: 'modal', headerShown: false }}
       />
     </Stack.Navigator>

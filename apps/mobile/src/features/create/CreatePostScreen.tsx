@@ -8,7 +8,7 @@ import { theme } from '../../theme';
 type Props = NativeStackScreenProps<RootStackParamList, 'CreatePost'>;
 
 /**
- * "+" ile açılan paylaşım/ekleme modalı — değerlendirme, fotoğraf, liste (P1 içerik üretimi).
+ * Kartpostal aksiyonuyla açılan paylaşım/ekleme modalı — değerlendirme, fotoğraf, liste (P1 içerik üretimi).
  * Şimdilik seçenekleri gösteren placeholder; ilgili ekranlar sonraki fazda bağlanacak.
  */
 export function CreatePostScreen({ navigation }: Props) {

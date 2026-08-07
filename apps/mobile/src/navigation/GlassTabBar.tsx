@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BlurView } from 'expo-blur';
@@ -23,7 +24,7 @@ const TAB_META: Record<string, { icon: IoniconName; iconActive: IoniconName; lab
  * Modern glassmorphism yüzen tab bar.
  *
  * - `expo-blur` ile cam efekti; yarı saydam kenar + gölge.
- * - 4 gerçek sekme; ortada yükseltilmiş "+" içerik ekleme modalını (CreatePost) açar.
+ * - Arkadaş sekmesinden sonra Kartpostal aksiyonu içerik ekleme modalını (CreatePost) açar.
  * - Sekmeler outline ikon, aktif sekme dolu ikon + primary renk.
  */
 export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -31,10 +32,10 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
-  // "+" ortada: ilk 2 sekme | + | son 2 sekme
-  const mid = Math.ceil(state.routes.length / 2);
-  const left = state.routes.slice(0, mid);
-  const right = state.routes.slice(mid);
+  // Keşfet | Topluluk | Arkadaş | Kartpostal | Profil
+  const postcardIndex = Math.max(state.routes.length - 1, 0);
+  const left = state.routes.slice(0, postcardIndex);
+  const right = state.routes.slice(postcardIndex);
 
   const openCreate = () =>
     navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('CreatePost');
@@ -46,7 +47,11 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
     const { options } = descriptors[route.key];
 
     const onPress = () => {
-      const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+      const event = navigation.emit({
+        type: 'tabPress',
+        target: route.key,
+        canPreventDefault: true,
+      });
       if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
     };
 
@@ -79,21 +84,27 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
         <BlurView
           intensity={40}
           tint={isDark ? 'dark' : 'light'}
-          style={[styles.bar, { backgroundColor: isDark ? 'rgba(17,24,39,0.55)' : 'rgba(255,255,255,0.6)' }]}
+          style={[
+            styles.bar,
+            { backgroundColor: isDark ? 'rgba(17,24,39,0.55)' : 'rgba(255,255,255,0.6)' },
+          ]}
         >
           {left.map(renderTab)}
 
-          {/* Ortadaki yükseltilmiş "+" — içerik ekleme modalını açar */}
-          <View style={styles.centerSlot}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Paylaş"
-              onPress={openCreate}
-              style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
-            >
-              <Ionicons name="add" size={30} color="#ffffff" />
-            </Pressable>
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Kartpostal"
+            onPress={openCreate}
+            hitSlop={8}
+            style={styles.tab}
+          >
+            <MaterialCommunityIcons
+              name="postage-stamp"
+              size={24}
+              color={isDark ? '#9ca3af' : theme.colors.muted}
+            />
+            <Text style={styles.label}>Kartpostal</Text>
+          </Pressable>
 
           {right.map(renderTab)}
         </BlurView>
@@ -140,22 +151,4 @@ const styles = StyleSheet.create({
   },
   label: { fontSize: 11, fontWeight: '600', color: theme.colors.muted },
   labelActive: { color: theme.colors.primary },
-  centerSlot: { width: 64, alignItems: 'center', justifyContent: 'center' },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 999,
-    marginTop: -28, // bar'ın üstüne taşar
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    borderWidth: 4,
-    borderColor: 'rgba(255,255,255,0.65)',
-    shadowColor: theme.colors.primary,
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 10,
-  },
-  fabPressed: { opacity: 0.85, transform: [{ scale: 0.96 }] },
 });
