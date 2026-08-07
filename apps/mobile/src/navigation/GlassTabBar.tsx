@@ -16,7 +16,7 @@ type IoniconName = ComponentProps<typeof Ionicons>['name'];
 const TAB_META: Record<string, { icon: IoniconName; iconActive: IoniconName; label: string }> = {
   Kesfet: { icon: 'map-outline', iconActive: 'map', label: 'Keşfet' },
   Topluluk: { icon: 'people-outline', iconActive: 'people', label: 'Topluluk' },
-  ArkadasAra: { icon: 'person-add-outline', iconActive: 'person-add', label: 'Arkadaş' },
+  YolArkadasi: { icon: 'trail-sign-outline', iconActive: 'trail-sign', label: 'Yol Arkadaşı' },
   Profil: { icon: 'person-outline', iconActive: 'person', label: 'Profil' },
 };
 
@@ -24,7 +24,7 @@ const TAB_META: Record<string, { icon: IoniconName; iconActive: IoniconName; lab
  * Modern glassmorphism yüzen tab bar.
  *
  * - `expo-blur` ile cam efekti; yarı saydam kenar + gölge.
- * - Arkadaş sekmesinden sonra Kartpostal aksiyonu içerik ekleme modalını (CreatePost) açar.
+ * - Yol Arkadaşı sekmesinden sonra Kartpostal aksiyonu içerik ekleme modalını (CreatePost) açar.
  * - Sekmeler outline ikon, aktif sekme dolu ikon + primary renk.
  */
 export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -32,7 +32,7 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
-  // Keşfet | Topluluk | Arkadaş | Kartpostal | Profil
+  // Keşfet | Topluluk | Yol Arkadaşı | Kartpostal | Profil
   const postcardIndex = Math.max(state.routes.length - 1, 0);
   const left = state.routes.slice(0, postcardIndex);
   const right = state.routes.slice(postcardIndex);
