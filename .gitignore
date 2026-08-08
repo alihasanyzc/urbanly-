@@ -2,29 +2,50 @@
 node_modules/
 .pnp
 .pnp.js
+.npm/
 
 # Build çıktıları
 dist/
 build/
 *.tsbuildinfo
+.cache/
+.turbo/
+.eslintcache
+.parcel-cache/
 
-# Env — ASLA commit edilmez (bkz. CLAUDE.md §5.1)
+# Env — ASLA commit edilmez (bkz. AGENTS.md §5.1)
 .env
 .env.*
 !.env.example
 
 # Prisma
 apps/api/prisma/*.db
+apps/api/prisma/*.db-journal
+apps/api/prisma/*.db-shm
+apps/api/prisma/*.db-wal
+apps/api/prisma/*.sqlite
+apps/api/prisma/*.sqlite3
 
 # Expo / React Native
 .expo/
+.expo-shared/
+expo-env.d.ts
 *.jks
+*.keystore
 *.p8
 *.p12
+*.pem
+*.cer
+*.der
 *.key
 *.mobileprovision
+*.apk
+*.aab
+*.ipa
 *.orig.*
+*.orig
 web-build/
+.cxx/
 
 # Loglar
 *.log
@@ -38,12 +59,20 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+*.swp
+*.swo
+
+# Yerel AI araç ayarları / geçici worktree'ler
+.claude/settings.local.json
+.claude/worktrees/
 
 # Test / coverage
 coverage/
+.nyc_output/
 
 # Metro / Expo ek
 .metro-health-check*
+.metro-cache/
 *.tgz
 
 # Expo native prebuild çıktıları (managed workflow'da commit edilmez)
