@@ -3,20 +3,22 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { ComponentProps } from 'react';
+import { useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RootStackParamList, TabParamList } from '../../navigation/RootNavigator';
 import { TAB_BAR_SPACE } from '../../navigation/tabBarLayout';
 import { theme } from '../../theme';
 import { MOCK_PLACES } from '../map/data/mockPlaces';
+import { PROFILE_COMMENTS } from './mock-profile';
+import { ProfileCommentCard } from './profile-comment-card';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'Profil'>,
   NativeStackScreenProps<RootStackParamList>
 >;
 
-type IoniconName = ComponentProps<typeof Ionicons>['name'];
+type ProfileTab = 'postcards' | 'comments';
 
 const PROFILE = {
   displayName: 'Eylül Arslan',
@@ -29,13 +31,12 @@ const PROFILE = {
     { label: 'Kaydedilen', value: '38' },
     { label: 'Takipçi', value: '326' },
   ],
-  interests: [
-    { label: 'Sokak kültürü', icon: 'color-palette-outline' },
-    { label: 'Kahve', icon: 'cafe-outline' },
-    { label: 'Fotoğraf', icon: 'camera-outline' },
-    { label: 'Yürüyüş', icon: 'walk-outline' },
-  ] satisfies ReadonlyArray<{ label: string; icon: IoniconName }>,
 } as const;
+
+const PROFILE_TABS = [
+  { id: 'postcards', label: 'Kartpostallar' },
+  { id: 'comments', label: 'Yorumlar' },
+] as const satisfies ReadonlyArray<{ id: ProfileTab; label: string }>;
 
 const POSTCARD_SOURCES = [
   {
@@ -73,9 +74,10 @@ const RECENT_POSTCARDS = POSTCARD_SOURCES.map((postcard) => {
   };
 });
 
-/** Şehir keşif geçmişini, ilgi alanlarını ve kartpostal üretimini tek profilde toplar. */
+/** Profil kimliğini, kartpostalları ve diğer kullanıcıların yorumlarını birlikte sunar. */
 export function ProfileScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
+  const [activeTab, setActiveTab] = useState<ProfileTab>('postcards');
 
   return (
     <ScrollView
@@ -103,33 +105,25 @@ export function ProfileScreen({ navigation }: Props) {
         </View>
       </View>
 
-      <View style={styles.profileCard}>
-        <View pointerEvents="none" style={styles.decorativeCircleLarge} />
-        <View pointerEvents="none" style={styles.decorativeCircleSmall} />
+      <View style={styles.profileHeader}>
+        <View style={styles.avatarFrame}>
+          <Image
+            source={{ uri: PROFILE.avatarUrl }}
+            accessibilityLabel={`${PROFILE.displayName} profil fotoğrafı`}
+            style={styles.avatar}
+          />
+        </View>
 
-        <View style={styles.identityRow}>
-          <View style={styles.avatarFrame}>
-            <Image
-              source={{ uri: PROFILE.avatarUrl }}
-              accessibilityLabel={`${PROFILE.displayName} profil fotoğrafı`}
-              style={styles.avatar}
-            />
-            <View style={styles.verifiedBadge}>
-              <Ionicons name="checkmark" size={13} color="#ffffff" />
-            </View>
-          </View>
-
-          <View style={styles.identityText}>
-            <Text selectable numberOfLines={1} style={styles.displayName}>
-              {PROFILE.displayName}
-            </Text>
-            <Text selectable numberOfLines={1} style={styles.username}>
-              @{PROFILE.username}
-            </Text>
-            <View style={styles.memberRow}>
-              <Ionicons name="sparkles" size={13} color="#bfdbfe" />
-              <Text style={styles.memberText}>Şehir kâşifi · Mart 2026’dan beri</Text>
-            </View>
+        <View style={styles.identityText}>
+          <Text selectable numberOfLines={1} style={styles.displayName}>
+            {PROFILE.displayName}
+          </Text>
+          <Text selectable numberOfLines={1} style={styles.username}>
+            @{PROFILE.username}
+          </Text>
+          <View style={styles.memberRow}>
+            <Ionicons name="sparkles-outline" size={13} color={theme.colors.primary} />
+            <Text style={styles.memberText}>Şehir kâşifi · Mart 2026’dan beri</Text>
           </View>
         </View>
 
@@ -168,21 +162,71 @@ export function ProfileScreen({ navigation }: Props) {
         <Ionicons name="arrow-forward" size={20} color="#ffffff" />
       </Pressable>
 
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text selectable style={styles.sectionTitle}>
-            İlgi alanların
-          </Text>
-          <Text style={styles.sectionCaption}>Önerilerini şekillendirir</Text>
+      <View style={styles.profileContent}>
+        <View style={styles.profileTabs}>
+          {PROFILE_TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+
+            return (
+              <Pressable
+                key={tab.id}
+                accessibilityRole="tab"
+                accessibilityLabel={tab.label}
+                accessibilityState={{ selected: isActive }}
+                onPress={() => setActiveTab(tab.id)}
+                style={({ pressed }) => [styles.profileTab, pressed && styles.profileTabPressed]}
+              >
+                <Text style={[styles.profileTabLabel, isActive && styles.profileTabLabelActive]}>
+                  {tab.label}
+                </Text>
+                {isActive && <View style={styles.profileTabIndicator} />}
+              </Pressable>
+            );
+          })}
         </View>
-        <View style={styles.interestGrid}>
-          {PROFILE.interests.map((interest) => (
-            <View key={interest.label} style={styles.interestChip}>
-              <Ionicons name={interest.icon} size={17} color={theme.colors.primary} />
-              <Text style={styles.interestText}>{interest.label}</Text>
-            </View>
-          ))}
-        </View>
+
+        {activeTab === 'postcards' ? (
+          <ScrollView
+            horizontal
+            nestedScrollEnabled
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.postcardRow}
+          >
+            {RECENT_POSTCARDS.map((postcard) => (
+              <View key={postcard.id} style={styles.postcardCard}>
+                <Image
+                  source={{ uri: postcard.imageUrl }}
+                  accessibilityLabel={`${postcard.place.name} kartpostal görseli`}
+                  style={styles.postcardImage}
+                />
+                <View style={styles.postcardBody}>
+                  <Text selectable numberOfLines={1} style={styles.postcardTitle}>
+                    {postcard.title}
+                  </Text>
+                  <View style={styles.postcardPlaceRow}>
+                    <Ionicons name="location-outline" size={14} color={theme.colors.primary} />
+                    <Text numberOfLines={1} style={styles.postcardPlace}>
+                      {postcard.place.name}
+                    </Text>
+                  </View>
+                  <View style={styles.postcardMeta}>
+                    <Text style={styles.postcardDate}>{postcard.publishedAt}</Text>
+                    <View style={styles.likeCount}>
+                      <Ionicons name="heart" size={14} color="#ef4444" />
+                      <Text style={styles.likeCountText}>{postcard.likeCount}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        ) : (
+          <View style={styles.commentList}>
+            {PROFILE_COMMENTS.map((comment) => (
+              <ProfileCommentCard key={comment.id} comment={comment} />
+            ))}
+          </View>
+        )}
       </View>
 
       <View style={styles.discoveryCard}>
@@ -204,56 +248,12 @@ export function ProfileScreen({ navigation }: Props) {
           </View>
         </View>
       </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text selectable style={styles.sectionTitle}>
-            Son kartpostallar
-          </Text>
-          <Text style={styles.sectionCaption}>{RECENT_POSTCARDS.length} paylaşım</Text>
-        </View>
-
-        <ScrollView
-          horizontal
-          nestedScrollEnabled
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.postcardRow}
-        >
-          {RECENT_POSTCARDS.map((postcard) => (
-            <View key={postcard.id} style={styles.postcardCard}>
-              <Image
-                source={{ uri: postcard.imageUrl }}
-                accessibilityLabel={`${postcard.place.name} kartpostal görseli`}
-                style={styles.postcardImage}
-              />
-              <View style={styles.postcardBody}>
-                <Text selectable numberOfLines={1} style={styles.postcardTitle}>
-                  {postcard.title}
-                </Text>
-                <View style={styles.postcardPlaceRow}>
-                  <Ionicons name="location-outline" size={14} color={theme.colors.primary} />
-                  <Text numberOfLines={1} style={styles.postcardPlace}>
-                    {postcard.place.name}
-                  </Text>
-                </View>
-                <View style={styles.postcardMeta}>
-                  <Text style={styles.postcardDate}>{postcard.publishedAt}</Text>
-                  <View style={styles.likeCount}>
-                    <Ionicons name="heart" size={14} color="#ef4444" />
-                    <Text style={styles.likeCountText}>{postcard.likeCount}</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#f6f8fc' },
+  root: { flex: 1, backgroundColor: theme.colors.bg },
   content: {
     width: '100%',
     maxWidth: 680,
@@ -286,68 +286,52 @@ const styles = StyleSheet.create({
     backgroundColor: '#eff6ff',
   },
   cityBadgeText: { fontSize: 12, fontWeight: '700', color: theme.colors.primary },
-  profileCard: {
-    overflow: 'hidden',
-    gap: theme.spacing(4),
-    padding: theme.spacing(5),
-    borderRadius: 28,
-    backgroundColor: '#153e91',
+  profileHeader: {
+    alignItems: 'center',
+    gap: theme.spacing(3),
+    paddingHorizontal: theme.spacing(2),
   },
-  decorativeCircleLarge: {
-    position: 'absolute',
-    width: 190,
-    height: 190,
-    top: -95,
-    right: -55,
-    borderRadius: 999,
-    backgroundColor: 'rgba(96,165,250,0.2)',
-  },
-  decorativeCircleSmall: {
-    position: 'absolute',
-    width: 90,
-    height: 90,
-    bottom: -42,
-    left: -24,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  identityRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing(4) },
   avatarFrame: {
-    width: 82,
-    height: 82,
-    padding: 3,
+    width: 96,
+    height: 96,
+    padding: 4,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.bg,
   },
   avatar: { width: '100%', height: '100%', borderRadius: 999, backgroundColor: '#dbeafe' },
-  verifiedBadge: {
-    position: 'absolute',
-    right: 0,
-    bottom: 2,
-    width: 24,
-    height: 24,
+  identityText: { alignItems: 'center', gap: 3 },
+  displayName: { fontSize: 22, fontWeight: '900', color: theme.colors.text },
+  username: { fontSize: 13, fontWeight: '600', color: theme.colors.muted },
+  memberRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 999,
-    borderWidth: 2,
-    borderColor: '#153e91',
-    backgroundColor: '#22c55e',
+    gap: theme.spacing(1),
+    paddingTop: 3,
   },
-  identityText: { flex: 1, minWidth: 0, gap: 3 },
-  displayName: { fontSize: 22, fontWeight: '900', color: '#ffffff' },
-  username: { fontSize: 13, fontWeight: '600', color: '#bfdbfe' },
-  memberRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing(1), paddingTop: 3 },
-  memberText: { flexShrink: 1, fontSize: 11, color: '#dbeafe' },
-  bio: { fontSize: 14, lineHeight: 21, color: '#eff6ff' },
-  statsRow: {
-    flexDirection: 'row',
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+  memberText: { flexShrink: 1, fontSize: 11, color: theme.colors.muted },
+  bio: {
+    maxWidth: 460,
+    textAlign: 'center',
+    fontSize: 14,
+    lineHeight: 21,
+    color: theme.colors.text,
   },
+  statsRow: { width: '100%', flexDirection: 'row', paddingTop: theme.spacing(2) },
   statItem: { flex: 1, minHeight: 62, alignItems: 'center', justifyContent: 'center', gap: 2 },
-  statItemBorder: { borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: '#60a5fa' },
-  statValue: { fontSize: 18, fontWeight: '900', color: '#ffffff', fontVariant: ['tabular-nums'] },
-  statLabel: { fontSize: 10, fontWeight: '600', color: '#bfdbfe' },
+  statItemBorder: {
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: theme.colors.border,
+  },
+  statValue: {
+    fontSize: 19,
+    fontWeight: '900',
+    color: theme.colors.text,
+    fontVariant: ['tabular-nums'],
+  },
+  statLabel: { fontSize: 11, fontWeight: '600', color: theme.colors.muted },
   createPostcardButton: {
     minHeight: 76,
     flexDirection: 'row',
@@ -370,29 +354,34 @@ const styles = StyleSheet.create({
   createPostcardTitle: { fontSize: 16, fontWeight: '900', color: '#ffffff' },
   createPostcardSubtitle: { fontSize: 12, lineHeight: 17, color: '#dbeafe' },
   buttonPressed: { opacity: 0.78 },
-  section: { gap: theme.spacing(3) },
-  sectionHeader: {
-    minHeight: 28,
+  profileContent: { gap: theme.spacing(4) },
+  profileTabs: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: theme.spacing(2),
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.border,
   },
-  sectionTitle: { fontSize: 18, fontWeight: '900', color: theme.colors.text },
-  sectionCaption: { flexShrink: 1, fontSize: 11, color: theme.colors.muted },
-  interestGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing(2) },
-  interestChip: {
-    minHeight: 40,
+  profileTab: {
+    minHeight: 48,
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: theme.spacing(2),
-    paddingHorizontal: theme.spacing(3),
+    borderRadius: 10,
+  },
+  profileTabPressed: { backgroundColor: '#f8fafc' },
+  profileTabLabel: { fontSize: 13, fontWeight: '700', color: theme.colors.muted },
+  profileTabLabelActive: { color: theme.colors.text },
+  profileTabIndicator: {
+    position: 'absolute',
+    right: theme.spacing(3),
+    bottom: -1,
+    left: theme.spacing(3),
+    height: 2,
     borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#bfdbfe',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.primary,
   },
-  interestText: { fontSize: 12, fontWeight: '700', color: '#1e3a8a' },
+  commentList: { gap: theme.spacing(3) },
   discoveryCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
